@@ -1,0 +1,18 @@
+@import "@carbon/layout";
+@import "@carbon/type";
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.scrollable-div {
+    height: 700px; /* set a fixed height for the div */
+    overflow-y: scroll; /* enable vertical scrollbar */
+  }
+
+.notification{
+    position: absolute;
+    z-index: 9999;
+    right: 0;
+    top: 5rem;
+}

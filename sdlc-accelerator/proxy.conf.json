@@ -1,0 +1,42 @@
+{
+    "/identity/token":{
+        "target":"https://iam.cloud.ibm.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    } , 
+
+    "/ml/v1-beta/generation/text?version=2023-05-29":{
+        "target":"https://us-south.ml.cloud.ibm.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+
+    "/watsonx_proxy":{
+        "target":"https://127.0.0.1",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+
+    "/extracttext":{
+        "target":"https://127.0.0.1",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/generateDiagram":{
+        "target":"https://127.0.0.1",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/createItem": {
+        "target": "https://127.0.0.1:8443/",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    }
+
+}

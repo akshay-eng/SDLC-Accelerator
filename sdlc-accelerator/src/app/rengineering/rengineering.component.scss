@@ -1,0 +1,18 @@
+@import "@carbon/layout";
+@import "@carbon/type";
+
+.scrollable-div {
+    height: 700px; /* set a fixed height for the div */
+    overflow-y: scroll; /* enable vertical scrollbar */
+  }
+
+.file-content {
+  width: 30rem;
+}
+
+.notification{
+  position: absolute;
+  z-index: 9999;
+  right: 0;
+  top: 5rem;
+}

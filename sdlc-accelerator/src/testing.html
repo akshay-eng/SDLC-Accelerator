@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.1.9/docxtemplater.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.js"></script>
+        <script>
+            var openFile = function(event) {
+                var input = event.target;
+                var reader = new FileReader();
+                reader.onload = function() {
+                    var zip = new JSZip(reader.result);
+                    var doc = new window.docxtemplater().loadZip(zip);
+                    var text = doc.getFullText();
+                    var node = document.getElementById('output');
+                    node.innerText = text;
+                };
+                reader.readAsBinaryString(input.files[0]);
+            };
+        </script>
+    </head>
+    <body>
+        <input type='file' onchange='openFile(event)'>
+        <br>
+        <div id='output'>...</div>
+        <div id='codes'> </div>
+        <button onclick='code(event)'>Gen</button>
+    </body>
+</html>

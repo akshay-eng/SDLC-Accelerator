@@ -1,0 +1,79 @@
+<div cdsTheme="g100">
+    <!--<cds-header [route]="['home']" name="Watson SDLC">
+        <cds-header-navigation>
+            <cds-header-item
+                        
+                        [isCurrentPage]="currentPage === 'Planning and Analysis'"
+                        [activeLinkClass]="'item--active'" (click)="changeRoute($event, 'planning')">Planning and Analysis</cds-header-item>
+            <cds-header-item
+                        
+                        [isCurrentPage]="currentPage === 'Design'"
+                        [activeLinkClass]="'item--active'" (click)="changeRoute($event, 'design')">Design</cds-header-item>
+            <cds-header-item
+                        
+                        [isCurrentPage]="currentPage === 'Development'"
+                        [activeLinkClass]="'item--active'" (click)="changeRoute($event, 'development')">Development</cds-header-item>
+            <cds-header-item
+                        
+                        [isCurrentPage]="currentPage === 'Testing'"
+                        [activeLinkClass]="'item--active'" (click)="changeRoute($event, 'testing')">Testing</cds-header-item>
+            <cds-header-item
+                        [isCurrentPage]="currentPage === 'Deployment'"
+                        [activeLinkClass]="'item--active'" (click)="changeRoute($event, 'deployment')">Deployment</cds-header-item>
+            <cds-header-item>Maintenance</cds-header-item>
+            <cds-header-menu title="Others">
+                <cds-header-item>Link 1</cds-header-item>
+                <cds-header-item>Link 2</cds-header-item>
+                <cds-header-item>Link 34</cds-header-item>
+            </cds-header-menu>
+        </cds-header-navigation>
+        <cds-header-global>
+            <cds-header-action description="action">
+                <svg cdsIcon="settings" size="20"></svg>
+            </cds-header-action>
+            <cds-header-action description="action">
+                <svg cdsIcon="notification" size="20"></svg>
+            </cds-header-action>
+            <cds-header-action description="action">
+                <svg cdsIcon="user--avatar" size="20"></svg>
+            </cds-header-action>
+        </cds-header-global>
+    </cds-header>-->
+    <cds-header name="SDLC Accelerator" [route]="['home']" brand="">
+        <cds-hamburger
+        [active]="active"
+        (selected)="active = !active"
+        ></cds-hamburger>
+      </cds-header>
+      <cds-sidenav [expanded]="active" style="margin-top: 3rem">
+        <cds-sidenav-item [active]="currentPage === 'Reverse Engineering'" (click)="changeRoute($event, 'reverse_eng')">
+            <svg cdsIcon="ibm-watsonx--code-assistant" size="32"></svg>
+            Reverse Engineering
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Requirements Gathering'" (click)="changeRoute($event, 'planning')">
+            <svg cdsIcon="template" size="32"></svg>
+            Requirements Gathering
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Testing'" (click)="changeRoute($event, 'testing')">
+            <svg cdsIcon="request-quote" size="32"></svg>
+            Functional Test Cases
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Design'" (click)="changeRoute($event, 'design')">
+            <svg cdsIcon="screen" size="32"></svg>
+            Design
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Development'" (click)="changeRoute($event, 'development')">
+            <svg cdsIcon="ibm-watsonx--code-assistant-for-z--refactor" size="32"></svg>
+            Development
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Deployment'" (click)="changeRoute($event, 'deployment')">
+            <svg cdsIcon="deployment-policy" size="32"></svg>
+            Deployment
+        </cds-sidenav-item>
+        <cds-sidenav-item [active]="currentPage === 'Operations'" (click)="changeRoute($event, 'operations')">
+            <svg cdsIcon="license--maintenance" size="32"></svg>
+            Operations
+        </cds-sidenav-item>
+      </cds-sidenav>
+      
+</div>

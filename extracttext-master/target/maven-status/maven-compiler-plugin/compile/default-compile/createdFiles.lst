@@ -1,0 +1,4 @@
+org/example/extracttext/controller/DocxFileController.class
+org/example/extracttext/ServletInitializer.class
+org/example/extracttext/services/DocxFileService.class
+org/example/extracttext/ExtracttextApplication.class

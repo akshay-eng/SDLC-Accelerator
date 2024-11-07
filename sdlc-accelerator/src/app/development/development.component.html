@@ -1,0 +1,225 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+    class="notification"
+    [notificationObj]="notificationObj"
+    (close)="notificationShow=false"
+  ></cds-toast>
+</div>
+<div style="padding-left: 1rem;"><sdlctitle breadcrumb="Development" title="Development"></sdlctitle></div>
+<div cdsGrid>
+    <div cdsRow>
+        <cds-tabs [isNavigation]="false" style="width: 100%;">
+            <cds-tab heading="Front end code Generation" [active]="activeTab===0 ? true : false">
+                <div ibmRow>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                        <div [cdsStack]="'vertical'" [gap]="gap">
+                            <form [formGroup]="fcodeGenForm" novalidate>
+                                <p class="starter-tab-description">
+                                    Front end code generation 
+                                </p>
+                                <p class="builder-heading">&nbsp;</p>
+                                <cds-textarea-label
+                                    [invalid]="fcodeGenInstInvalid"
+                                    [invalidText]="fcodeGenInstInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter your instructions
+                                    <textarea class="form-control" formControlName="fcodeGenInst" required
+                                        cdsTextArea
+                                        placeholder="Enter your input..."
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label>
+                                <p class="builder-heading">&nbsp;</p>
+                                <!--<cds-textarea-label
+                                    [invalid]="fcodeGenInputInvalid"
+                                    [invalidText]="fcodeGenInputInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter your input
+                                    <textarea class="form-control" formControlName="fcodeGenInput" required
+                                        cdsTextArea
+                                        [placeholder]="placeholderFcodeGenInput"
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label> -->
+                                <div cdsStack="horizontal" [gap]=5>
+                                    <cds-file-uploader [drop]="true"
+                                            [title]="fileUploadLldDocumentTitle"
+                                            [description]="fileUploadLldDocumentDescription"
+                                            [dropText]="fileUploadDropText"
+                                            [multiple]="false"
+                                            [accept]="lldDocumentAccept"
+                                            [(files)]="lldDocumentFiles"
+                                            [fileItemSize]="fileItemSize"
+                                            (filesChange)="onDropped($event, 'LLD')"
+                                            formControlName="fcodeGenFileInput1"
+
+                                            >
+                                        </cds-file-uploader>
+                                        <cds-file-uploader [drop]="true"
+                                            [title]="fileUploadFrontendSourceCodeTitle"
+                                            [description]="fileUploadFrontendSourceCodeDescription"
+                                            [dropText]="fileUploadDropText"
+                                            [multiple]="false"
+                                            [accept]="frontendSourceCodeAccept"
+                                            [(files)]="frontendSourceCodeFiles"
+                                            [fileItemSize]="fileItemSize"
+                                            (filesChange)="onDropped($event, 'frontend')"
+                                            formControlName="fcodeGenFileInput2"
+                                            >
+                                        </cds-file-uploader>
+                                </div>
+                                <p class="builder-heading">&nbsp;</p>
+                                <button cdsButton="primary" size="lg" (click)="generateFcode('generateFcode')" [disabled]="!fcodeGenForm.valid">
+                                    Generate Front End Code
+                                </button>
+                                <!-- <cds-code-snippet [display]="multi" translations>{{display1}}</cds-code-snippet> -->
+                            </form>
+                        </div>
+                    </div>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                        <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                            <cds-loading *ngIf="loadingVisible"
+                                [isActive]="isActive" [size]="size" [overlay]="overlay">
+                            </cds-loading>
+                        </div>
+                        <div *ngIf="generateFcodeGenResultsVisible">
+                            <div style="text-align: right;">
+                                <button cdsButton="primary" size="md" (click)="activeTab=1" style="margin-right: 0.5rem;">
+                                    Next Stage
+                                </button>
+                                <button cdsButton="primary" size="md" (click)="download('generateFcode')">
+                                    Download
+                                    <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                                </button>
+                            </div>
+                            <!-- <p class="scrollable-div" id="generateFcodeData" [innerHTML]="generateFcode_response.value" style="border: 1px solid blue"></p> -->
+                            <!-- <p class="scrollable-div" id="generateFcodeData" style="border: 1px solid blue">{{display1}}</p> -->
+                            <p class="scrollable-div" id="generateFcodeData" style="border: 1px solid blue">
+                                <cds-code-snippet [display]="multi" [theme]="theme" translations [expanded]="true">{{displayData}}</cds-code-snippet>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </cds-tab>
+            <cds-tab heading="Back end code Generation" [active]="activeTab===1 ? true : false">
+                <div ibmRow>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                        <div [cdsStack]="'vertical'" [gap]="gap">
+                            <form [formGroup]="bcodeGenForm" novalidate>
+                                <p class="starter-tab-description">
+                                    Back end code generation 
+                                </p>
+                                <p class="builder-heading">&nbsp;</p>
+                                <cds-textarea-label
+                                    [invalid]="bcodeGenInstInvalid"
+                                    [invalidText]="bcodeGenInstInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter your instructions
+                                    <textarea class="form-control" formControlName="bcodeGenInst" required
+                                        cdsTextArea
+                                        placeholder="Enter your input..."
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label>
+                                <p class="builder-heading">&nbsp;</p>
+                                <!--<cds-textarea-label
+                                    [invalid]="bcodeGenInputInvalid"
+                                    [invalidText]="bcodeGenInputInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter your input
+                                    <textarea class="form-control" formControlName="bcodeGenInput" required
+                                        cdsTextArea
+                                        [placeholder]="placeholderBcodeGenInput"
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label>-->
+                                <div cdsStack="horizontal" [gap]=5>
+                                        <cds-file-uploader [drop]="true"
+                                            [title]="fileUploadFrontendSourceCodeBackendTitle"
+                                            [description]="fileUploadFrontendSourceCodeBackendDescription"
+                                            [dropText]="fileUploadDropText"
+                                            [multiple]="false"
+                                            [accept]="frontendSourceCodeBackendAccept"
+                                            [(files)]="frontendSourceCodeBackendFiles"
+                                            [fileItemSize]="fileItemSize"
+                                            (filesChange)="onDropped($event, 'frontendBackend')"
+                                            formControlName="bcodeGenFileInput1"
+                                            >
+                                        </cds-file-uploader>
+                                        <cds-file-uploader [drop]="true"
+                                            [title]="fileUploadBackendSourceCodeTitle"
+                                            [description]="fileUploadBackendSourceCodeDescription"
+                                            [dropText]="fileUploadDropText"
+                                            [multiple]="false"
+                                            [accept]="backendSourceCodeAccept"
+                                            [(files)]="backendSourceCodeFiles"
+                                            [fileItemSize]="fileItemSize"
+                                            (filesChange)="onDropped($event, 'backend')"
+                                            formControlName="bcodeGenFileInput2"
+                                            >
+                                        </cds-file-uploader>
+                                </div>
+                                <p class="builder-heading">&nbsp;</p>
+                                <button cdsButton="primary" size="lg" (click)="generateBcode('generateBcode')" [disabled]="!bcodeGenForm.valid">
+                                    Generate Back End Code
+                                </button>
+                                <!-- <cds-code-snippet [display]="multi" translations>{{display1}}</cds-code-snippet> -->
+                            </form>
+                        </div>
+                    </div>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                        <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                            <cds-loading *ngIf="loadingVisible"
+                                [isActive]="isActive" [size]="size" [overlay]="overlay">
+                            </cds-loading>
+                        </div>
+                        <div *ngIf="generateBcodeGenResultsVisible">
+                            <div style="text-align: right;">
+                                <button cdsButton="primary" size="md" (click)="this.router.navigate(['deployment'])" style="margin-right: 0.5rem;">
+                                    Next Stage
+                                </button>
+                                <button cdsButton="primary" size="md" (click)="download('generateBcode')">
+                                    Download
+                                    <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                                </button>
+                            </div>
+                            <!-- <p class="scrollable-div" id="generateFcodeData" [innerHTML]="generateFcode_response.value" style="border: 1px solid blue"></p> -->
+                            <!-- <p class="scrollable-div" id="generateFcodeData" style="border: 1px solid blue">{{display1}}</p> -->
+                            <p class="scrollable-div" id="generateBcodeData" style="border: 1px solid blue">
+                                <cds-code-snippet [display]="multi" [theme]="theme" translations [expanded]="true">{{displayData}}</cds-code-snippet>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </cds-tab>
+        </cds-tabs>
+    </div>
+</div>

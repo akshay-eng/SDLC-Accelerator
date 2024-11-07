@@ -1,0 +1,13 @@
+import { WebpackPluginInstance as Plugin } from 'webpack';
+
+export class EnvironmentPlugin extends Plugin {
+  constructor() {
+    super();
+  }
+
+  apply(compiler: any) {
+    compiler.hooks.environment.tap('EnvironmentPlugin', (environment: any) => {
+      environment.API_KEY = process.env.API_KEY;
+    });
+  }
+}

@@ -1,0 +1,24 @@
+<cds-modal [open]="open" (overlaySelected)="closeModal()">
+  <cds-modal-header (closeSelect)="closeModal()" style="text-align: left;"
+    >Please provide job name</cds-modal-header
+  >
+  <section class="cds--modal-content">
+    <cds-label>
+      Job Name
+      <input cdsText [(ngModel)]="inputValue" [value]="inputValue" (change)="onChange($event)" />
+    </cds-label>
+  </section>
+  <cds-modal-footer>
+    <button class="cds--btn cds--btn--secondary" (click)="closeModal()">
+      Cancel
+    </button>
+    <button
+      [disabled]="inputValue === ''"
+      class="cds--btn cds--btn--primary"
+      modal-primary-focus
+      (click)="createJob()"
+    >
+      Create
+    </button>
+  </cds-modal-footer>
+</cds-modal>

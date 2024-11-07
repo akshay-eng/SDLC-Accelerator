@@ -1,0 +1,249 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+    class="notification"
+    [notificationObj]="notificationObj"
+    (close)="notificationShow=false"
+  ></cds-toast>
+</div>
+<div style="padding-left: 1rem;"><sdlctitle breadcrumb="Design" title="Design"></sdlctitle></div>
+<div cdsGrid>
+<div cdsRow>
+    <cds-tabs [isNavigation]="true" style="width: 100%;">
+        <cds-tab heading="LLD Generation">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="lldGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Create low level design document from the requirements document.
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="lldGenInstInvalid"
+                                [invalidText]="lldGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="lldGenInst" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <!--<cds-textarea-label
+                                [invalid]="lldGenInputInvalid"
+                                [invalidText]="lldGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter user stories
+                                <textarea class="form-control" formControlName="lldGenInput" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderLLDGenInput"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>-->
+                            <cds-file-uploader [drop]="true"
+                            [title]="fileUploadTitle"
+                            [description]="fileUploadDescription"
+                            [dropText]="fileUploadDropText"
+                            [multiple]="false"
+                            [accept]="accept"
+                            [(files)]="files"
+                            [fileItemSize]="fileItemSize"
+                            (filesChange)="onDropped($event)"
+                            formControlName="lldGenFileInput"
+                            >
+                            </cds-file-uploader>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateLLDDoc('generateLLDDoc')" [disabled]="!lldGenForm.valid">
+                                Generate LLD Document
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateLLDDocResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="this.router.navigate(['development'])" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('generateLLDDoc')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <div class="scrollable-div" style="border: 1px solid blue; padding: 1rem;">
+                            <p id="generateLLDDocData" [innerHTML]="generateLLDDoc_response.value"></p>
+                            <BR/>
+                            <p>UML Diagram:</p>
+                            <img src="{{diagramImg}}" alt="Sign Thumbnail">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </cds-tab>
+        <!--<cds-tab heading="Use Case Diagram Generation">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="ucdGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Create Use Case diagram for developing a new feature by providing user stories. 
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="ucdGenInstInvalid"
+                                [invalidText]="ucdGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="ucdGenInst" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderUCDGenInst"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="ucdGenInputInvalid"
+                                [invalidText]="ucdGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter user stories
+                                <textarea class="form-control" formControlName="ucdGenInput" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderLLDGenInput"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateUCDDoc('generateUCDDoc')">
+                                Generate Use Case Diagram
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateUCDDocResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="download('generateUCDDoc')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>-->
+                        <!-- <p class="scrollable-div" id="generateUCDDocData" [innerHTML]="generateUCDDoc_response.value" style="border: 1px solid blue"></p> -->
+                        <!--<p class="scrollable-div" id="generateSDDocData" style="border: 1px solid blue"><img src="{{diagramImg}}" alt="Sign Thumbnail"></p>
+                    </div>
+                </div>
+            </div>
+        </cds-tab>
+        <cds-tab heading="Sequence Diagram Generation">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="sdGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Create Sequence diagram for developing a new feature by providing user stories. 
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="sdGenInstInvalid"
+                                [invalidText]="sdGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="sdGenInst" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderSDGenInst"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="sdGenInputInvalid"
+                                [invalidText]="sdGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="sdGenInput" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderSDGenInput"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateSDDoc('generateSDDoc')">
+                                Generate Sequence Case Diagram
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateSDDocResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="download('generateSDDoc')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>-->
+                        <!-- <p class="scrollable-div" id="generateSDDocData" [innerHTML]="generateSDDoc_response.value" style="border: 1px solid blue"></p> -->
+                       <!--<p class="scrollable-div" id="generateSDDocData" style="border: 1px solid blue"><img src="{{diagramImg}}" alt="Sign Thumbnail"></p>
+                    </div>
+                </div>
+            </div>
+        </cds-tab>-->
+    </cds-tabs>
+</div>
+</div>

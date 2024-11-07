@@ -1,0 +1,147 @@
+<div class="single-workflow-container grid-container">
+  <div class="container">
+    <!-- User Story Prompt Input -->
+    <div class="user-story-prompt">
+      <label for="userStoryPrompt" class="form-label">User Story Prompt:</label>
+      <input 
+        type="text" 
+        id="userStoryPrompt" 
+        class="form-control" 
+        [(ngModel)]="userStoryPrompt" 
+        placeholder="Enter user story prompt here">
+    </div>
+  
+    <!-- File Upload Button -->
+    <div class="file-upload-container">
+      <h3>Upload Zip File</h3>
+      <label for="file-upload" class="custom-file-upload">
+        <i class="fas fa-cloud-upload-alt"></i> Choose File
+      </label>
+      <input id="file-upload" type="file" (change)="onFileSelected($event)" accept=".py,.txt">
+      <div *ngIf="uploadStatus !== 'idle'" class="upload-status">
+        <p [ngClass]="{
+          'status-uploading': uploadStatus === 'uploading',
+          'status-success': uploadStatus === 'success',
+          'status-error': uploadStatus === 'error'
+        }">{{uploadMessage}}</p>
+        <div *ngIf="uploadStatus === 'uploading'" class="progress-bar-container">
+          <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workflow-steps">
+    <div class="grid-item step-tile" *ngFor="let step of steps; index as i">
+      <div class="tile-checkbox">
+        <label>
+          <input cdsCheckbox type="checkbox" id="step-{{i}}" [(ngModel)]="selectedSteps[i]">
+          <div class="tile-content">
+            <h3>{{step.title}}</h3>
+            <!-- <p>{{step.description}}</p> -->
+          </div>   
+          <span class="status-indicator" [ngClass]="step.status ? step.status.toLowerCase().replace(' ', '-') : ''"          >
+            {{step.status || ''}}
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-container">
+    <div class="tab-header">
+      <button [class.active]="activeTab === 'reverseEngineering'" (click)="setActiveTab('reverseEngineering')">Reverse Engineering</button>
+      <button [class.active]="activeTab === 'planning'" (click)="setActiveTab('planning')">Planning</button>
+      <button [class.active]="activeTab === 'updateRequirementDoc'" (click)="setActiveTab('updateRequirementDoc')">Update Requirement Doc</button>
+      <button [class.active]="activeTab === 'testing'" (click)="setActiveTab('testing')">Testcases</button>
+      <button [class.active]="activeTab === 'design'" (click)="setActiveTab('design')">Design</button>
+      <button [class.active]="activeTab === 'frontend'" (click)="setActiveTab('frontend')">Frontend</button>
+      <button [class.active]="activeTab === 'backend'" (click)="setActiveTab('backend')">Backend</button>
+      <button [class.active]="activeTab === 'jenkinsconfig'" (click)="setActiveTab('jenkinsconfig')">Jenkins configuration</button>
+      <button [class.active]="activeTab === 'jenkins'" (click)="setActiveTab('jenkins')">JenkinsFile</button>
+      <button [class.active]="activeTab === 'docker'" (click)="setActiveTab('docker')">Dockerfile</button>
+      <button [class.active]="activeTab === 'kubernetes'" (click)="setActiveTab('kubernetes')">Deployment configuration File</button>
+    </div>
+
+    <div class="tab-content">
+      <div *ngIf="activeTab === 'reverseEngineering'">
+        <h3>Generated Requirement Document:</h3>
+        <textarea [(ngModel)]="generateRequirementDoc_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveRequirementDoc()">Save Requirement Document</button>
+      </div>
+
+      <div *ngIf="activeTab === 'planning'">
+        <h3>Generated User Stories:</h3>
+        <textarea [(ngModel)]="userStories_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveUserStories()">Save User Stories</button>
+      </div>
+
+      <div *ngIf="activeTab === 'updateRequirementDoc'">
+        <h3>Updated Requirement Document:</h3>
+        <textarea [(ngModel)]="updateRequirementDoc_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="onUpdateRequirementDocChange()">Save Updated Requirement Document</button>
+      </div>
+
+      <div *ngIf="activeTab === 'testing'">
+        <h3>Generated Testcases:</h3>
+        <textarea [(ngModel)]="generateTestCase_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveTestCases()">Save Testcases</button>
+      </div>
+
+      <div *ngIf="activeTab === 'design'">
+        <h3>Low Level Design Document</h3>
+        <textarea [(ngModel)]="generateLLDDoc_response.value" rows="20" cols="150"></textarea>
+        <h4>Sequence Diagram</h4>
+        <img [src]="diagramImg" *ngIf="diagramImg" alt="Sequence Diagram" />
+        <button cdsButton="primary" (click)="saveDesignDocuments()">Save Design Documents</button>
+      </div>
+
+      <div *ngIf="activeTab === 'frontend'">
+        <h3>Frontend Code</h3>
+        <textarea [(ngModel)]="generateFcode_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveFrontendCode()">Save Frontend Code</button>
+      </div>
+
+      <div *ngIf="activeTab === 'backend'">
+        <h3>Backend Code</h3>
+        <textarea [(ngModel)]="generateBcode_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveBackendCode()">Save Backend Code</button>
+      </div>
+
+      <div *ngIf="activeTab === 'jenkinsconfig'">
+        <h3>Jenkins Configuration File</h3>
+        <textarea [(ngModel)]="generateJenkinsConfig_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveJenkinsConfig()">Save Jenkins Configuration File</button>
+      </div>
+
+      <div *ngIf="activeTab === 'jenkins'">
+        <h3>Jenkins File</h3>
+        <textarea [(ngModel)]="generateJenkinsFile_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveJenkinsfile()">Save Jenkins File</button>
+      </div>
+
+      <div *ngIf="activeTab === 'docker'">
+        <h3>Docker File</h3>
+        <textarea [(ngModel)]="generateDockerfile_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveDockerfile()">Save Docker File</button>
+      </div>
+
+      <div *ngIf="activeTab === 'kubernetes'">
+        <h3>Deployment Configuration File</h3>
+        <textarea [(ngModel)]="generateOCPConfig_response.value" rows="20" cols="150"></textarea>
+        <button cdsButton="primary" (click)="saveOCPConfig()" >Save Deployment Configuration File</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="workflow-actions">
+    <button (click)="onStartWorkflow($event)" cdsButton="primary">Start Workflow</button>
+    <button (click)="onResetWorkflow($event)" cdsButton="secondary">Reset Workflow</button>
+    <div class="download-all-checkbox">
+      <label>
+        <input cdsCheckbox type="checkbox" [(ngModel)]="downloadAllOutputs">
+        Download all output files automatically
+      </label>
+    </div>
+  </div>
+</div>

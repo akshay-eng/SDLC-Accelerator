@@ -1,0 +1,302 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+    class="notification"
+    [notificationObj]="notificationObj"
+    (close)="notificationShow=false"
+  ></cds-toast>
+</div>
+<div style="padding-left: 1rem;"><sdlctitle breadcrumb="Deployment" title="Deployment"></sdlctitle></div>
+<div cdsGrid>
+<div cdsRow>
+    <cds-tabs [isNavigation]="true" style="width: 100%;">
+        <cds-tab heading="Generate Jenkins Configuration" [active]="activeTab===0 ? true : false">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="jenkinsConfigJobForm" novalidate>
+                            <p class="starter-tab-description">
+                                Generate Jenkins job configuration
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="jenkinsConfigJobInputInvalid"
+                                [invalidText]="jenkinsConfigJobInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="jenkinsConfigJobInput" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateJenkinsConfigJob('generateJenkinsConfigJob')" [disabled]="!jenkinsConfigJobForm.valid">
+                                Generate Jenkins Job Config
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateJenkinsConfigJobResultVisible">
+                        <div style="text-align: right;">
+                            <button *ngIf="showNextStage===true" cdsButton="primary" size="md" (click)="activeTab=1" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="openModal();getLatestXML(a.editor?.getValue() || '')">Create Jenkins Job</button>
+                            <cds-placeholder></cds-placeholder>
+                        </div>
+                        <p class="scrollable-div" id="generateJenkinsConfigJobData" style="border: 1px solid blue;">
+                            <!--<cds-code-snippet [display]="multi" [theme]="theme" translations>{{displayData}}</cds-code-snippet>-->
+                            <nu-monaco-editor #a [model]="model" [options]="options" [disabled]="disabled" height="100%" ></nu-monaco-editor>
+                        </p>
+                        <!-- <p class="scrollable-div" id="generateJenkinsData" [innerHTML]="generateJenkins_response.value" style="border: 1px solid blue"></p> -->
+                    </div>
+
+                </div>
+            </div>
+        </cds-tab>
+        <cds-tab heading="Generate Jenkinsfile" [active]="activeTab===1 ? true : false">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="jenkinsGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Generate Jenkinsfile. 
+                            </p>
+                            <!--<p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="jenkinsGenInstInvalid"
+                                [invalidText]="jenkinsGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="jenkinsGenInst" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderJenkinsGenInst"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>-->
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="jenkinsGenInputInvalid"
+                                [invalidText]="jenkinsGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="jenkinsGenInput" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateJenkins('generateJenkins')" [disabled]="!jenkinsGenForm.valid">
+                                Generate Jenkins file
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateJenkinsResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="activeTab=2" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('generateJenkins')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <p class="scrollable-div" id="generateJenkinsData" style="border: 1px solid blue">
+                            <cds-code-snippet [display]="multi" [theme]="theme" translations [expanded]="true">{{displayData}}</cds-code-snippet>
+                        </p>
+                        <!-- <p class="scrollable-div" id="generateJenkinsData" [innerHTML]="generateJenkins_response.value" style="border: 1px solid blue"></p> -->
+                    </div>
+
+                </div>
+            </div>
+        </cds-tab>
+        <cds-tab heading="Generate Dockerfile" [active]="activeTab===2 ? true : false">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="dockerGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Generate a dockerfile.
+                            </p>
+                            <!--<p class="builder-heading">&nbsp;</p>
+                            
+                            <cds-textarea-label
+                                [invalid]="dockerGenInstInvalid"
+                                [invalidText]="dockerGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="dockerGenInst" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderDockerGenInst"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>-->
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="dockerGenInputInvalid"
+                                [invalidText]="dockerGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="dockerGenInput" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateDocker('generateDocker')" [disabled]="!dockerGenForm.valid">
+                                Generate Docker file
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateDockerResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="activeTab=3" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('generateDocker')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <p class="scrollable-div" id="generateDockerData" style="border: 1px solid blue">
+                            <cds-code-snippet [display]="multi" [theme]="theme" translations [expanded]="true">{{displayData}}</cds-code-snippet>
+                        </p>
+                        <!-- <p class="scrollable-div" id="generateDockerData" [innerHTML]="generateDocker_response.value" style="border: 1px solid blue"></p> -->
+                    </div>
+                </div>
+            </div>
+        </cds-tab>
+        <cds-tab heading="Generate OCP Config" [active]="activeTab===3 ? true : false">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="ocpConfigGenForm" novalidate>
+                            <p class="starter-tab-description">
+                                Generate OpenShift configuration files
+                            </p>
+                            <!--<p class="builder-heading">&nbsp;</p>
+                            
+                            <cds-textarea-label
+                                [invalid]="ocpConfigGenInstInvalid"
+                                [invalidText]="ocpConfigGenInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="ocpConfigGenInst" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderOCPConfigGenInst"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>-->
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="ocpConfigGenInputInvalid"
+                                [invalidText]="ocpConfigGenInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="ocpConfigGenInput" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateOCPConfig('generateOCPConfig')" [disabled]="!ocpConfigGenForm.valid">
+                                Generate OCP Application YAML File
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateOCPConfigResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="download('generateOCPConfig')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <p class="scrollable-div" id="generateOCPConfigData" style="border: 1px solid blue">
+                            <cds-code-snippet [display]="multi" [theme]="theme" translations [expanded]="true">{{displayData}}</cds-code-snippet>
+                        </p>
+                        <!-- <p class="scrollable-div" id="generateOCPConfigData" [innerHTML]="generateOCPConfig_response.value" style="border: 1px solid blue"></p> -->
+                    </div>
+                </div>
+            </div>
+        </cds-tab>
+    </cds-tabs>
+</div>
+</div>

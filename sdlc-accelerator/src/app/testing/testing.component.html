@@ -1,0 +1,105 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+    class="notification"
+    [notificationObj]="notificationObj"
+    (close)="notificationShow=false"
+  ></cds-toast>
+</div>
+<div style="padding-left: 1rem;"><sdlctitle breadcrumb="Functional Test Cases" title="Functional Test Cases"></sdlctitle></div>
+<div cdsGrid>
+    <div cdsRow>
+        <cds-tabs [isNavigation]="true" style="width: 100%;">
+            <cds-tab heading="Functional Test Case Generation">
+                <div ibmRow>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                        <div [cdsStack]="'vertical'" [gap]="gap">
+                            <form [formGroup]="testCaseForm" novalidate>
+                                <p class="starter-tab-description"> 
+                                    Functional Test Case generation 
+                                </p>
+                                <p class="builder-heading">&nbsp;</p>
+                                <cds-textarea-label
+                                    [invalid]="testCaseInstInvalid"
+                                    [invalidText]="testCaseInstInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter your instructions
+                                    <textarea class="form-control" formControlName="testCaseInst" required
+                                        cdsTextArea
+                                        placeholder="Enter your input..."
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label>
+                                <p class="builder-heading">&nbsp;</p>
+                                <!--<cds-textarea-label
+                                    [invalid]="testCaseInputInvalid"
+                                    [invalidText]="testCaseInputInvalidText"
+                                    [disabled]="disabled"
+                                    [warn]="warn"
+                                    >
+                                    Please enter user stories
+                                    <textarea class="form-control" formControlName="testCaseInput" required
+                                        cdsTextArea
+                                        [placeholder]="placeholderTestCaseInput"
+                                        [invalid]="invalid"
+                                        
+                                        [theme]="theme"
+                                        [rows]="5"
+                                        [cols]="100"
+                                        aria-label="textarea"
+                                    ></textarea>
+                                </cds-textarea-label>-->
+                                <cds-file-uploader [drop]="true"
+                                    [title]="fileUploadTitle"
+                                    [description]="fileUploadDescription"
+                                    [dropText]="fileUploadDropText"
+                                    [multiple]="false"
+                                    [accept]="accept"
+                                    [(files)]="files"
+                                    [fileItemSize]="fileItemSize"
+                                    (filesChange)="onDropped($event)"
+                                    formControlName="testCaseFileInput"
+                            >
+                            </cds-file-uploader>
+                                <p class="builder-heading">&nbsp;</p>
+                                <button cdsButton="primary" size="lg" (click)="generateTestCase('generateTestCase')" [disabled]="!testCaseForm.valid">
+                                    Generate Functional Test Cases
+                                </button>
+                                <!-- <cds-code-snippet [display]="multi" translations>{{display1}}</cds-code-snippet> -->
+                            </form>
+                        </div>
+                    </div>
+                    <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                        <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                            <cds-loading *ngIf="loadingVisible"
+                                [isActive]="isActive" [size]="size" [overlay]="overlay">
+                            </cds-loading>
+                        </div>
+                        <div *ngIf="generateTestCaseResultsVisible">
+                            <div style="text-align: right;">
+                                <button cdsButton="primary" size="md" (click)="this.router.navigate(['design'])" style="margin-right: 0.5rem;">
+                                    Next Stage
+                                </button>
+                                <button cdsButton="primary" size="md" (click)="download('generateTestCase')">
+                                    Download
+                                    <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                                </button>
+                            </div>
+                            <p class="scrollable-div" id="generateFcodeData" [innerHTML]="generateTestCase_response.value" style="border: 1px solid blue; padding: 1rem;"></p>
+                            <!-- <p class="scrollable-div" id="generateFcodeData" style="border: 1px solid blue">{{displayData}}</p> -->
+                            <!-- <p class="scrollable-div" id="generateTestCaseeData" style="border: 1px solid blue">
+                                <cds-code-snippet [display]="multi" [theme]="theme" translations>{{displayData}}</cds-code-snippet>
+                            </p> -->
+                        </div>
+                    </div>
+                </div>
+            </cds-tab>
+        </cds-tabs>
+    </div>
+</div>

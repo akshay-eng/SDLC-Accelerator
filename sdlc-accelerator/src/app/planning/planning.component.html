@@ -1,0 +1,175 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+        class="notification"
+        [notificationObj]="notificationObj"
+        (close)="notificationShow=false">
+    </cds-toast>
+</div>
+<div style="padding-left: 1rem;margin-top: -1rem;"><sdlctitle breadcrumb="Requirements Gathering" title="Requirements Gathering"></sdlctitle></div>
+<div cdsGrid>
+<div cdsRow>
+    <cds-tabs [isNavigation]="true">
+        <cds-tab heading="User Stories" [active]="activeTab === 0 ?  true : false">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="userStoryForm" novalidate>
+                            <p class="starter-tab-description">
+                                Generate user stories for new capabilities/functionalities.
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            
+                            <cds-textarea-label
+                                [invalid]="userStoryInvalid"
+                                [invalidText]="userStoryInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter instructions to generate user stories
+                                <textarea class="form-control" formControlName="userStory" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                                </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="getUserStories('userStory')" [disabled]="!userStoryForm.valid">
+                                Generate User Stories
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="userStoryResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="activeTab=1" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('userStory')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        
+                        <p class="scrollable-div" id="getUserStoriesData" [innerHTML]="getUserStories_response.value" style="border: 1px solid blue; padding: 1rem;"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!--<p class="subtitle">Other information</p><br>-->
+            <div cdsRow>
+                <div cdsCol [columnNumbers]="{'md': 2, 'sm': 12}">
+                    
+                </div>
+                <div cdsCol [columnNumbers]="{'md': 2, 'sm': 12}">
+                    
+                </div>
+                <div cdsCol [columnNumbers]="{'md': 2, 'sm': 12}">
+                    
+                </div>
+                <div cdsCol [columnNumbers]="{'md': 2, 'sm': 12}">
+                
+                </div>
+
+            </div>
+        </cds-tab>
+        <cds-tab #update heading="Update Document" [active]="activeTab === 1 ?  true : false">
+            <div #updateDiv ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="updateReqDocForm" novalidate>
+                            <p class="starter-tab-description">
+                                Enhance the existing requirements document for the new user stories/requirements.
+                            </p>
+                            
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="updateReqDocInstInvalid"
+                                [invalidText]="updateReqDocInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="updateReqDocInst" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="updateReqDocInputInvalid"
+                                [invalidText]="updateReqDocInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter user stories
+                                <textarea class="form-control" formControlName="updateReqDocInput" required
+                                    cdsTextArea
+                                    [placeholder]=""
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-file-uploader [drop]="true"
+                                [title]="fileUploadTitle"
+                                [description]="fileUploadDescription"
+                                [dropText]="fileUploadDropText"
+                                [multiple]="false"
+                                [accept]="accept"
+                                [(files)]="files"
+                                [fileItemSize]="fileItemSize"
+                                (filesChange)="onDropped($event)"
+                                formControlName="updateReqDocFileInput"
+                                >
+                            </cds-file-uploader>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="updateRequirementDoc('updateRequirementDoc')" [disabled]="!updateReqDocForm.valid">
+                                Update Requirement Document
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="updateRequirementDocResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="this.router.navigate(['testing'])" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('updateRequirementDoc')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <p class="scrollable-div" id="updateRequirementDocData" [innerHTML]="updateRequirementDoc_response.value" style="border: 1px solid blue; padding: 1rem;"></p>
+                    </div>
+                </div>
+            </div>
+        </cds-tab>
+    </cds-tabs>
+</div>  
+</div>

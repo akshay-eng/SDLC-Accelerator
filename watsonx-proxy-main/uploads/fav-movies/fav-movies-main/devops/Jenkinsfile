@@ -1,0 +1,24 @@
+ timestamps {
+    node () {
+        wrap([$class: '''Xvfb''']) {
+            stage ('''fav-movies - Checkout''') {
+                checkout([$class: '''GitSCM''', branches: [[name: '''*/main''']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '''github.com''', url: '''https://github.com/akshay-eng/fav-movies.git''']]])
+            }
+            stage ('''fav-movies - Build & Deployment''') {
+
+                sh "docker login ${container_registry_url}"
+                sh "docker build -t ${imagename}:${BUILD_NUMBER} -f devops/Dockerfile ."
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+
+                // Deploy application
+                sh "kubectl apply -f devops/"
+                sh "kubectl get pods"
+
+            }
+        }
+        cleanWs()
+    }
+}

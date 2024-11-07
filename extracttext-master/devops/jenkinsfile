@@ -1,0 +1,23 @@
+
+
+timestamps {
+    node () {
+        wrap([$class: 'Xvfb']) {
+            stage ('extracttext - Checkout') {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github.ibm.com', url: 'https://github.ibm.com/automation-squad/extracttext.git']]])
+            }
+            stage ('extracttext - Build & push image to registry') {
+            
+                sh "mvn install"
+                sh "docker login ${container_registry_url}"
+                sh "docker build -t ${imagename}:${BUILD_NUMBER} -f devops/Dockerfile ."
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+
+            }
+        }
+        cleanWs()
+    }
+}

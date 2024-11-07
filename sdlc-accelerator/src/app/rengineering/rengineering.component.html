@@ -1,0 +1,112 @@
+<div *ngIf="notificationShow">
+    <cds-toast
+        class="notification"
+        [notificationObj]="notificationObj"
+        (close)="notificationShow=false">
+    </cds-toast>
+</div>
+<div style="padding-left: 1rem;margin-top: -1rem;"><sdlctitle breadcrumb="Reverse Engineering" title="Reverse Engineering"></sdlctitle></div>
+<div cdsGrid>
+<div cdsRow>
+    <cds-tabs [isNavigation]="true">
+        <cds-tab heading="Generate Document">
+            <div ibmRow>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 12, 'sm': 12}">
+                    <div [cdsStack]="'vertical'" [gap]="gap">
+                        <form [formGroup]="generateReqDocForm" novalidate>
+                            <p class="starter-tab-description">
+                                Reverse engineer the legacy code to generate requirements document.
+                            </p>
+                            <p class="builder-heading">&nbsp;</p>
+                            <cds-textarea-label
+                                [invalid]="generateReqDocInstInvalid"
+                                [invalidText]="generateReqDocInstInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your instructions
+                                <textarea class="form-control" formControlName="generateReqDocInst" required
+                                    cdsTextArea
+                                    placeholder="Enter your input..."
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label>
+                            <p class="builder-heading">&nbsp;</p>
+                            <!-- <cds-textarea-label
+                                [invalid]="generateReqDocInputInvalid"
+                                [invalidText]="generateReqDocInputInvalidText"
+                                [disabled]="disabled"
+                                [warn]="warn"
+                                >
+                                Please enter your input
+                                <textarea class="form-control" formControlName="generateReqDocInput" required
+                                    cdsTextArea
+                                    [placeholder]="placeholderGenReqDocInput"
+                                    [invalid]="invalid"
+                                    
+                                    [theme]="theme"
+                                    [rows]="5"
+                                    [cols]="100"
+                                    aria-label="textarea"
+                                ></textarea>
+                            </cds-textarea-label> -->
+                            <div cdsStack="horizontal" [gap]=5>
+                                <div>
+                                    <cds-file-uploader [drop]="true"
+                                        [title]="fileUploadSourceCodeTitle"
+                                        [description]="fileUploadSourceCodeDescription"
+                                        [dropText]="fileUploadDropText"
+                                        [multiple]="false"
+                                        [accept]="sourceCodeAccept"
+                                        [(files)]="sourceCodeFiles"
+                                        [fileItemSize]="fileItemSize"
+                                        (filesChange)="onDropped($event)"
+                                        formControlName="generateReqDocFileInput"
+                                        >
+                                    </cds-file-uploader>
+                                    <p class="builder-heading">&nbsp;</p>
+                                    <button *ngIf="showFileContentDisplayButton" cdsButton="tertiary" size="sm" (click)="displayFileContent()">
+                                        View File Contents
+                                    </button>
+                                </div>
+                                <div *ngIf="showFileContent" class="file-content">
+                                    <cds-code-snippet [display]='multi' [theme]="theme" translations>{{fileContent}}</cds-code-snippet>
+                                </div>
+                            </div>
+                            <p class="builder-heading">&nbsp;</p>
+                            <button cdsButton="primary" size="lg" (click)="generateRequirementDoc('generateRequirementDoc')" [disabled]="!generateReqDocForm.valid">
+                                Generate Requirement Document
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div ibmCol [columnNumbers]="{'lg': 8, 'md': 8, 'sm': 12}">
+                    <div *ngIf="loadingVisible" style="text-align: -webkit-center;">
+                        <cds-loading *ngIf="loadingVisible"
+                            [isActive]="isActive" [size]="size" [overlay]="overlay">
+                        </cds-loading>
+                    </div>
+                    <div *ngIf="generateRequirementDocResultsVisible">
+                        <div style="text-align: right;">
+                            <button cdsButton="primary" size="md" (click)="this.router.navigate(['planning'])" style="margin-right: 0.5rem;">
+                                Next Stage
+                            </button>
+                            <button cdsButton="primary" size="md" (click)="download('generateRequirementDoc')">
+                                Download
+                                <svg cdsIcon="download" size="20" class="cds--btn__icon"></svg>
+                            </button>
+                        </div>
+                        <p class="scrollable-div" id="generateRequirementDocData" [innerHTML]="generateRequirementDoc_response.value" style="border: 1px solid blue; padding: 1rem;"></p>
+                    </div>
+
+                </div>
+            </div>
+        </cds-tab>
+    </cds-tabs>
+</div>  
+</div>

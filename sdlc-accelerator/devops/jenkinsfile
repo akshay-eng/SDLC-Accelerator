@@ -1,0 +1,20 @@
+timestamps {
+    node () {
+        wrap([$class: 'Xvfb']) {
+            stage ('sdlcaccl - Checkout') {
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github.ibm.com', url: 'https://github.ibm.com/automation-squad/sdlcaccl.git']]])
+            }
+            stage ('sdlcaccl - Build & push image to registry') {
+            
+                sh "docker login ${container_registry_url}"
+                sh "docker build -t ${imagename}:${BUILD_NUMBER} --build-arg WATSONX_PROXY=${WATSONX_PROXY} --build-arg EXTRACTTEXT_PROXY=${EXTRACTTEXT_PROXY} --build-arg GENERATEDIAGRAM_PROXY=${GENERATEDIAGRAM_PROXY} --build-arg CREATEITEM_PROXY=${CREATEITEM_PROXY} -f devops/Dockerfile ."
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}"
+                sh "docker push ${container_registry_url}/${registry_namespace}/${imagename}:latest"
+
+            }
+        }
+        cleanWs()
+    }
+}

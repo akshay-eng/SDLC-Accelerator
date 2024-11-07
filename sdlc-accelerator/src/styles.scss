@@ -1,0 +1,48 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use "@carbon/styles/scss/config" with (
+	// Use flexbox for grid - stick to CSS Grid or Flexbox
+	// CSS Grid has become the default grid system in v11
+	$use-flexbox-grid: true,
+    $font-path: '@ibm/plex'
+);
+
+@use "@carbon/styles";
+
+@import '@carbon/themes/scss/themes';
+
+/* @use '@carbon/themes/scss/themes' as *;
+@use '@carbon/themes' with (
+  $theme: $g100
+); */
+
+@import 'carbon-components/scss/globals/scss/styles.scss';
+//$font-path: '~carbon-components/src/globals/fonts'; 
+
+//@include carbon--theme($carbon--theme--g100);
+
+.white {
+	@include styles.theme(styles.$white);
+}
+
+.g10 {
+	@include styles.theme(styles.$g10);
+}
+
+.g90 {
+	@include styles.theme(styles.$g90);
+}
+
+.g100 {
+	@include styles.theme(styles.$g100);
+}
+//.theme {
+//   @include themes.theme(themes.$theme);
+//}
+
+.cds--header__nav {
+	display: block;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: "IBM Plex Sans"; }
+
