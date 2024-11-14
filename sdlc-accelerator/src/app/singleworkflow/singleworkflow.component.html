@@ -112,6 +112,14 @@
         <h3>Jenkins Configuration File</h3>
         <textarea [(ngModel)]="generateJenkinsConfig_response.value" rows="20" cols="150"></textarea>
         <button cdsButton="primary" (click)="saveJenkinsConfig()">Save Jenkins Configuration File</button>
+      <!-- Create Job Button -->
+      <button cdsButton="primary"  style="margin-left: 10px;" (click)="openModal();getLatestXML(savedJenkinsConfig|| '')">Create Jenkins Job</button>
+      <cds-placeholder></cds-placeholder>
+
+
+
+
+
       </div>
 
       <div *ngIf="activeTab === 'jenkins'">
@@ -130,6 +138,7 @@
         <h3>Deployment Configuration File</h3>
         <textarea [(ngModel)]="generateOCPConfig_response.value" rows="20" cols="150"></textarea>
         <button cdsButton="primary" (click)="saveOCPConfig()" >Save Deployment Configuration File</button>
+        <button cdsButton="primary" style="margin-left: 10px;" (click)="downloadFavMovies()">downlaod the updated source-code</button>
       </div>
     </div>
   </div>

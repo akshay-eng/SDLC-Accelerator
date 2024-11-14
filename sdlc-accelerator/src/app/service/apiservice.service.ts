@@ -12,8 +12,8 @@ export class APIServiceService implements OnInit{
   cacheSubscription: Subscription | undefined;
   TOKEN_URL = "/identity/token";
   ASK_WATSON_URL_OLD = "/ml/v1-beta/generation/text?version=2023-05-29";
-  ASK_WATSON_URL = "http://127.0.0.1:8080/watsonx_proxy";
-  EXTRACT_TEXT_URL="http://127.0.0.1:8085/extracttext";
+  ASK_WATSON_URL = "/watsonx_proxy"; // add the local urls in front of the path while running it locally 
+  EXTRACT_TEXT_URL="/extracttext";
   JENKINS_URL= "/createItem?name="
   JENKINS_USERNAME= environment.JENKINS_USERNAME;
   JENKINS_PASSWORD= environment.JENKINS_PASSWORD;

@@ -1,5 +1,5 @@
 import { Component,  OnInit } from '@angular/core';
-import { AccordionModule, CheckboxModule, ButtonModule, GridModule, IconModule, IconService, InputModule, LayoutModule, LoadingModule, StackDirective, FileUploaderModule, TabsModule, FileItem, NotificationModule, InlineLoadingModule, InlineLoadingState } from 'carbon-components-angular';
+import { AccordionModule, CheckboxModule,PlaceholderModule, ButtonModule,ModalModule,ModalService, GridModule, IconModule, IconService, InputModule, LayoutModule, LoadingModule, StackDirective, FileUploaderModule, TabsModule, FileItem, NotificationModule, InlineLoadingModule, InlineLoadingState } from 'carbon-components-angular';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -9,13 +9,15 @@ import { saveAs } from 'file-saver';
 import { FormBuilder } from '@angular/forms';
 import {  ElementRef, ViewChild } from '@angular/core';
 import { lastValueFrom } from 'rxjs';  // Add this import
-
+import { ModalComponent } from '../modal/modal.component';
+import { Observable, Subject } from 'rxjs';
+import { HttpResponse } from '@angular/common/http';
 @Component({
   selector: 'app-singleworkflow',
   templateUrl: './singleworkflow.component.html',
   styleUrls: ['./singleworkflow.component.scss'],
  standalone: true,
-  imports: [ButtonModule, AccordionModule, CheckboxModule, FormsModule, CommonModule , FileUploaderModule , ]  // <-- Add CommonModule here
+  imports: [ButtonModule, AccordionModule, CheckboxModule,PlaceholderModule, FormsModule, CommonModule ,  ModalModule, FileUploaderModule , ]  // <-- Add CommonModule here
 })
 export class SingleWorkflowComponent implements OnInit {
 
@@ -28,6 +30,7 @@ export class SingleWorkflowComponent implements OnInit {
 
 
   constructor (
+    protected modalService: ModalService,
     private http: HttpClient,
     private service: APIServiceService,
     protected iconService: IconService,
@@ -36,6 +39,14 @@ export class SingleWorkflowComponent implements OnInit {
   ) {
   
   }
+  protected modalInputValue = "";
+	protected data: Observable<string> = new Subject<string>();
+  openModal() {
+    this.modalService.create({component: ModalComponent, inputs: {
+      inputValue: this.modalInputValue,
+			data: this.data
+    }});
+    }
   userStoryPrompt: string = '';
   generateReqDocForm!: FormGroup;
   generateRequirementDoc_response = new FormControl('');
@@ -94,7 +105,14 @@ export class SingleWorkflowComponent implements OnInit {
       userStory: ['', [Validators.required, Validators.minLength(10)]]
     });
   }
-
+  ngAfterContentInit() {
+		this.data.subscribe(value => {
+      this.modalInputValue = value
+      if(value)
+        this.createConfigJob(this.modalInputValue)
+      this.modalInputValue = ""
+    });
+	}
   onResetWorkflow(event: any) {
     this.http.delete('http://127.0.0.1:8080/reset-uploads', {}).subscribe({next:(response)=>{
       console.log(response);
@@ -197,7 +215,7 @@ export class SingleWorkflowComponent implements OnInit {
   async generateRequirementDoc(fileContents: string) {
     this.steps[0].status = 'Running';
     const instruction = this.generateReqDocForm.get('generateReqDocInst')?.value || 
-      "Generate the requirement document for the application, code for which is given below. Provide the requirement document in word format.";
+      "Generate the requirement document for an existing movie-review application, code for which is given below. Provide the requirement document in word format.";
     
     let body = {
       input: instruction + '\n\nInput: ' + fileContents + '\n\nOutput:',
@@ -252,9 +270,9 @@ export class SingleWorkflowComponent implements OnInit {
       }
       this.steps[1].status = 'Completed';
       
-      if (this.downloadAllOutputs) {
-        this.download();
-      }
+      // if (this.downloadAllOutputs) {
+      //   this.download();
+      // }
     } catch (error: any) {
       console.error("Error in askWatson:", error);
       this.loadingVisible = false;
@@ -309,27 +327,35 @@ export class SingleWorkflowComponent implements OnInit {
     this.activeTab = tabName;
   }
 
-  saveRequirementDoc() {
-    this.savedRequirementDoc = this.generateRequirementDoc_response.value ||'';
+  async saveRequirementDoc() {
+    this.savedRequirementDoc = this.generateRequirementDoc_response.value || '';
     if (this.savedRequirementDoc) {
-      // Update the state with the new value
-      this.generateRequirementDoc_response.setValue(this.savedRequirementDoc);
-      console.log('Requirement document updated and saved to state.',this.savedRequirementDoc);
-       this.getUserStories();
+        console.log('Requirement document updated and saved to state.', this.savedRequirementDoc);
+        this.generateRequirementDoc_response.setValue(this.savedRequirementDoc);
+        this.getUserStories();
+
+        // Download if downloadAllOutputs is true
+        if (this.downloadAllOutputs) {
+            this.downloadAsWord(this.savedRequirementDoc, "initial_requirement_document.docx");
+        }
     } else {
-      console.warn('No requirement document to save.');
+        console.warn('No requirement document to save.');
     }
   }
 
-  saveUserStories() {
+  async saveUserStories() {
     this.savedUserStories = this.userStories_response.value || '';
     this.canSaveUserStories = false;
     this.canUpdateRequirementDoc = true;
     console.log('User stories saved to state.', this.savedUserStories);
-    // Automatically switch to the updateRequirementDoc tab
     this.setActiveTab('updateRequirementDoc');
 
-    this.updateRequirementDoc()
+    // Download if downloadAllOutputs is true
+    if (this.downloadAllOutputs) {
+        this.downloadAsWord(this.savedUserStories, "userstories.docx");
+    }
+
+    this.updateRequirementDoc();
   }
 
   async updateRequirementDoc() {
@@ -338,7 +364,7 @@ export class SingleWorkflowComponent implements OnInit {
     this.canUpdateRequirementDoc = false;
 
     let body = {
-      input: "Update and enhance the given movie review application requirement document by adding the given user stories. " + "Do not add user stories in the requirement document." + 
+      input: "Update and enhance the given movie review application requirement document by adding the given user stories.  " + "Do not add user stories in the requirement document." + 
              '\n\nInput:\nRequirement Document:\n\n' + this.generateRequirementDoc_response.value + 
              "\n\nUser stories:\n\n" + this.savedUserStories + '\n\nOutput:',
       model_id: "mistralai/mixtral-8x7b-instruct-v01",
@@ -390,18 +416,18 @@ export class SingleWorkflowComponent implements OnInit {
   canSaveUserStories: boolean = false;
   canUpdateRequirementDoc: boolean = false;
 
-  download() {
-    const data = this.generateRequirementDoc_response.value;
-    if (data) {
-      // Download as Word document
-      this.downloadAsWord(data);
+  // download() {
+  //   const data = this.generateRequirementDoc_response.value;
+  //   if (data) {
+  //     // Download as Word document
+  //     this.downloadAsWord(data , "");
       
-      // Download as text file
-      this.downloadAsText(data);
-    }
-  }
+  //     // Download as text file
+  //     this.downloadAsText(data);
+  //   }
+  // }
 
-  downloadAsWord(data: string) {
+  downloadAsWord(data: string, filename: string) {
     let children = [];
     let splitData = data.split('<br /><br />');
     for (let i = 0; i < splitData.length; i++) {
@@ -429,7 +455,7 @@ export class SingleWorkflowComponent implements OnInit {
       ]
     });
     Packer.toBlob(doc).then((buffer) => {
-      saveAs(buffer, "Generated Requirement Document.docx");
+      saveAs(buffer, filename);
     });
   }
 
@@ -449,9 +475,14 @@ export class SingleWorkflowComponent implements OnInit {
 
   onUpdateRequirementDocChange() {
     this.latestUpdatedRequirementDoc = this.updateRequirementDoc_response.value || '';
-    console.log('Requirement document updated and saved to state.',this.latestUpdatedRequirementDoc);
-    this.generateTestCases();
+    console.log('Requirement document updated and saved to state.', this.latestUpdatedRequirementDoc);
 
+    // Download if downloadAllOutputs is true
+    if (this.downloadAllOutputs) {
+        this.downloadAsWord(this.latestUpdatedRequirementDoc, "final_requirementdoc.docx");
+    }
+
+    this.generateTestCases();
   }
 
   generateTestCase_response = new FormControl('');
@@ -461,7 +492,7 @@ export class SingleWorkflowComponent implements OnInit {
   async generateTestCases() {
     console.log('Generating test cases...');
     this.steps[3].status = 'Running';
-    const dummyPrompt = "Generate 5-6 functional test cases for the given requirement document.";
+    const dummyPrompt = "Generate functional test-cases for the given requirement document.";
 
     let body = {
       input: dummyPrompt + '\n\nInput:' + this.latestUpdatedRequirementDoc + '\n\nOutput:',
@@ -502,17 +533,22 @@ export class SingleWorkflowComponent implements OnInit {
   async saveTestCases() {
     this.savedTestCases = this.generateTestCase_response.value || '';
     if (this.savedTestCases) {
-      console.log('Test cases saved to state:', this.savedTestCases);
-      this.canSaveTestCases = false;
-      
-      // Generate LLD and SD documents
-      await this.generateLLDDoc();
-      await this.generateSDDoc();
-      
-      // Switch to the design tab
-      this.setActiveTab('design');
+        console.log('Test cases saved to state:', this.savedTestCases);
+        this.canSaveTestCases = false;
+
+        // Download if downloadAllOutputs is true
+        if (this.downloadAllOutputs) {
+            this.downloadAsWord(this.savedTestCases, "testcases.docx");
+        }
+
+        // Generate LLD and SD documents
+        await this.generateLLDDoc();
+        await this.generateSDDoc();
+
+        // Switch to the design tab
+        this.setActiveTab('design');
     } else {
-      console.warn('No test cases to save.');
+        console.warn('No test cases to save.');
     }
   }
 
@@ -650,7 +686,7 @@ export class SingleWorkflowComponent implements OnInit {
     console.log('Generating frontend code...');
     this.steps[5].status = 'Running';
 
-    const fcodeGenInst = "For an existing movie review application, update the given front end code index.html. Generate code for adding a 'Delete' button. Consider the User Interface Design from the given Low level design document";
+    const fcodeGenInst = "For an existing movie review application, update the given front end code index.html. Generate code for adding a 'Delete' button. Consider the User Interface Design from the given Low level design document.";
 
     let body = {
       input: fcodeGenInst + '\n\nInput:\n' + '\n' + this.frontendSourceCodeContent + 
@@ -687,22 +723,24 @@ export class SingleWorkflowComponent implements OnInit {
   async saveFrontendCode() {
     this.savedFrontendCode = this.generateFcode_response.value || '';
     if (this.savedFrontendCode) {
-      console.log('Frontend code saved to state');
-      try {
-        // Save frontend code to server
-        await this.http.post('http://127.0.0.1:8080/update_index_file', { content: this.savedFrontendCode }).toPromise();
-        console.log('Frontend code updated successfully');
-        
-        // Generate backend code
-        await this.generateBcode();
-        
-        // Switch to backend tab
-        // this.setActiveTab('backend');
-      } catch (error) {
-        console.error('Error in saveFrontendCode:', error);
-      }
+        console.log('Frontend code saved to state');
+        try {
+            // Save frontend code to server
+            await this.http.post('http://127.0.0.1:8080/update_index_file', { content: this.savedFrontendCode }).toPromise();
+            console.log('Frontend code updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(this.savedFrontendCode, "index.html");
+            }
+
+            // Generate backend code
+            await this.generateBcode();
+        } catch (error) {
+            console.error('Error in saveFrontendCode:', error);
+        }
     } else {
-      console.warn('No frontend code to save.');
+        console.warn('No frontend code to save.');
     }
   }
 
@@ -751,20 +789,24 @@ export class SingleWorkflowComponent implements OnInit {
   async saveBackendCode() {
     const backendCode = this.generateBcode_response.value || '';
     if (backendCode) {
-      try {
-        // Save backend code to server
-        await this.http.post('http://127.0.0.1:8080/update_main_file', { content: backendCode }).toPromise();
-        console.log('Backend code updated successfully');
-        
-        // Start Jenkins config generation
-        await this.generateJenkinsConfig();
-        this.setActiveTab('deployment');
-      } catch (error) {
-        console.error('Error in saveBackendCode:', error);
-      }
+        try {
+            // Save backend code to server
+            await this.http.post('http://127.0.0.1:8080/update_main_file', { content: backendCode }).toPromise();
+            console.log('Backend code updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(backendCode, "main.py");
+            }
+
+            // Start Jenkins config generation
+            await this.generateJenkinsConfig();
+        } catch (error) {
+            console.error('Error in saveBackendCode:', error);
+        }
     }
   }
- jenkinsConfigJobExample:string = "Input: Generate Jenkins job configuration file for the project test-project with GitHub URL https://github.ibm.com/automation-squad/test-project.git and imagename as test-project\nOutput: <?xml version='1.1' encoding='UTF-8'?>\n<flow-definition plugin=\"workflow-job@1400.v7fd111b_ec82f\">\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties>\n    <hudson.model.ParametersDefinitionProperty>\n      <parameterDefinitions>\n        <hudson.model.StringParameterDefinition>\n          <name>container_registry_url</name>\n          <defaultValue>quay.io</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>registry_namespace</name>\n          <defaultValue>eesilab</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>imagename</name>\n          <defaultValue>test-project</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.PasswordParameterDefinition>\n          <name>IBM_CLOUD_API_KEY</name>\n          <defaultValue>ibm_cloud_api_key_value</defaultValue>\n        </hudson.model.PasswordParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>OCP_API_URL</name>\n          <defaultValue>ocp_api_url_value</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>Namespace</name>\n          <defaultValue>demo</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n      </parameterDefinitions>\n    </hudson.model.ParametersDefinitionProperty>\n  </properties>\n  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition\" plugin=\"workflow-cps@3883.vb_3ff2a_e3eea_f\">\n    <scm class=\"hudson.plugins.git.GitSCM\" plugin=\"git@5.2.1\">\n      <configVersion>2</configVersion>\n      <userRemoteConfigs>\n        <hudson.plugins.git.UserRemoteConfig>\n          <url>https://github.ibm.com/automation-squad/test-project.git</url>\n          <credentialsId>github.ibm.com</credentialsId>\n        </hudson.plugins.git.UserRemoteConfig>\n      </userRemoteConfigs>\n      <branches>\n        <hudson.plugins.git.BranchSpec>\n          <name>*/main</name>\n        </hudson.plugins.git.BranchSpec>\n      </branches>\n      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n      <submoduleCfg class=\"empty-list\"/>\n      <extensions/>\n    </scm>\n    <scriptPath>devops/jenkinsfile</scriptPath>\n    <lightweight>true</lightweight>\n  </definition>\n  <triggers/>\n  <disabled>false</disabled>\n</flow-definition>";
+ jenkinsConfigJobExample:string = "Input: Generate Jenkins job configuration file for the project test-project with GitHub URL https://github.com/akshay-eng/fav-movies.git  and imagename as test-project\nOutput: <?xml version='1.1' encoding='UTF-8'?>\n<flow-definition plugin=\"workflow-job@1400.v7fd111b_ec82f\">\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties>\n    <hudson.model.ParametersDefinitionProperty>\n      <parameterDefinitions>\n        <hudson.model.StringParameterDefinition>\n          <name>container_registry_url</name>\n          <defaultValue>index.docker.io</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>registry_namespace</name>\n          <defaultValue>wiprodigiexpert</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>imagename</name>\n          <defaultValue>test-project</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.PasswordParameterDefinition>\n          <name>IBM_CLOUD_API_KEY</name>\n          <defaultValue>ibm_cloud_api_key_value</defaultValue>\n        </hudson.model.PasswordParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>OCP_API_URL</name>\n          <defaultValue>ocp_api_url_value</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.StringParameterDefinition>\n          <name>Namespace</name>\n          <defaultValue>demo</defaultValue>\n          <trim>false</trim>\n        </hudson.model.StringParameterDefinition>\n      </parameterDefinitions>\n    </hudson.model.ParametersDefinitionProperty>\n  </properties>\n  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition\" plugin=\"workflow-cps@3883.vb_3ff2a_e3eea_f\">\n    <scm class=\"hudson.plugins.git.GitSCM\" plugin=\"git@5.2.1\">\n      <configVersion>2</configVersion>\n      <userRemoteConfigs>\n        <hudson.plugins.git.UserRemoteConfig>\n          <url>https://github.ibm.com/automation-squad/test-project.git</url>\n          <credentialsId>github.ibm.com</credentialsId>\n        </hudson.plugins.git.UserRemoteConfig>\n      </userRemoteConfigs>\n      <branches>\n        <hudson.plugins.git.BranchSpec>\n          <name>*/main</name>\n        </hudson.plugins.git.BranchSpec>\n      </branches>\n      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n      <submoduleCfg class=\"empty-list\"/>\n      <extensions/>\n    </scm>\n    <scriptPath>devops/jenkinsfile</scriptPath>\n    <lightweight>true</lightweight>\n  </definition>\n  <triggers/>\n  <disabled>false</disabled>\n</flow-definition>";
   // Jenkins Config Generation
   async generateJenkinsConfig() {
     console.log('Generating Jenkins config...');
@@ -801,21 +843,24 @@ export class SingleWorkflowComponent implements OnInit {
   async saveJenkinsConfig() {
     this.savedJenkinsConfig = this.generateJenkinsConfig_response.value || '';
     if (this.savedJenkinsConfig) {
-      console.log('Jenkins config saved to state:', this.savedJenkinsConfig);
-      try {
-        // Save Jenkins config to server
-        await this.http.post('http://127.0.0.1:8080/update_jenkins_config', { content: this.savedJenkinsConfig }).toPromise();
-        console.log("before function ncalled ")
-        // Call generateJenkinsfile after saving Jenkins config
-        await this.generateJenkinsfile();
-        console.log("after fucntion called ")
-        console.log('Jenkins config updated successfully');
-       
-      } catch (error: any) {
-        console.error('Error saving Jenkins config:', error);
-      }
+        console.log('Jenkins config saved to state:', this.savedJenkinsConfig);
+        try {
+            // Save Jenkins config to server
+            await this.http.post('http://127.0.0.1:8080/update_jenkins_config', { content: this.savedJenkinsConfig }).toPromise();
+            console.log('Jenkins config updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(this.savedJenkinsConfig, "jenkinsconfig.docx");
+            }
+
+            // Call generateJenkinsfile after saving Jenkins config
+            await this.generateJenkinsfile();
+        } catch (error) {
+            console.error('Error saving Jenkins config:', error);
+        }
     } else {
-      console.warn('No Jenkins config to save.');
+        console.warn('No Jenkins config to save.');
     }
   }
   placeholderJenkinsGenInst: any = "Generate Jenkins file for given input.\n\nInput: Create Jenkins file to build watsonx-prompter application'\''s docker image using docker file in the path devops/Dockerfile. The application has to be deployed in OpenShift cluster on IBM Cloud. The application code is in the GitHub repository https://github.ibm.com/automation-squad/watsonx-prompter.git. Use github.ibm.com as credentialsId.\nOutput: timestamps {\n    node () {\n        wrap([$class: '\''Xvfb'\'']) {\n            stage ('\''watsonx-prompter - Checkout'\'') {\n                checkout([$class: '\''GitSCM'\'', branches: [[name: '\''*/main'\'']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '\''github.ibm.com'\'', url: '\''https://github.ibm.com/automation-squad/watsonx-prompter.git'\'']]])\n            }\n            stage ('\''watsonx-prompter - Build & Deployment'\'') {\n\n                sh \"docker login ${container_registry_url}\"\n                sh \"docker build -t ${imagename}:${BUILD_NUMBER} -f devops/Dockerfile .\"\n                sh \"docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}\"\n                sh \"docker tag ${imagename}:${BUILD_NUMBER} ${container_registry_url}/${registry_namespace}/${imagename}:latest\"\n                sh \"docker push ${container_registry_url}/${registry_namespace}/${imagename}:${BUILD_NUMBER}\"\n                sh \"docker push ${container_registry_url}/${registry_namespace}/${imagename}:latest\"\n\n                // Deploy application\n                sh \"ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -r '\''us-south'\'' -g Default\"\n                sh \"oc login ${OCP_API_URL} -u apikey -p ${IBM_CLOUD_API_KEY}\"\n\n                sh \"oc project ${Namespace}\"\n                sh \"oc apply -f devops/\"\n                sh \"oc get route -n ${Namespace}\"\n\n            }\n        }\n        cleanWs()\n    }\n}";
@@ -852,17 +897,23 @@ export class SingleWorkflowComponent implements OnInit {
   async saveJenkinsfile() {
     this.savedJenkinsFile = this.generateJenkinsFile_response.value || '';
     if (this.savedJenkinsFile) {
-      console.log('Jenkinsfile saved to state:', this.savedJenkinsFile);
-      try {
-        // Save Jenkinsfile to server
-        await this.http.post('http://127.0.0.1:8080/update_jenkinsfile', { content: this.savedJenkinsFile }).toPromise();
-        console.log('Jenkinsfile updated successfully');
-        await this.generateDockerfile()
-      } catch (error: any) {
-        console.error('Error saving Jenkinsfile:', error);
-      }
+        console.log('Jenkinsfile saved to state:', this.savedJenkinsFile);
+        try {
+            // Save Jenkinsfile to server
+            await this.http.post('http://127.0.0.1:8080/update_jenkinsfile', { content: this.savedJenkinsFile }).toPromise();
+            console.log('Jenkinsfile updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(this.savedJenkinsFile, "jenkinsfile.docx");
+            }
+
+            await this.generateDockerfile();
+        } catch (error) {
+            console.error('Error saving Jenkinsfile:', error);
+        }
     } else {
-      console.warn('No Jenkinsfile to save.');
+        console.warn('No Jenkinsfile to save.');
     }
   }
   placeholderDockerGenInst: any = "Generate a docker file for running a python application watsonx-prompter.py on port 8080 which uses following environment variables: PROJECT_ID, API_KEY and WATSONX_URL. The application should run as a non-root user, namely favuser.\nOutput: FROM python:3.11-slim\nLABEL maintainer=\"EESI Lab - Automation Squad\"\nRUN groupadd -r favuser && useradd -r -g favuser favuser\nENV PROJECT_ID=\"\" \\\n    API_KEY=\"\" \\\n    WATSONX_URL=\"\"\n\nRUN mkdir app\nWORKDIR /app\n\n# Copy requirements.txt and install dependencies\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n# Copy the application files\nCOPY . .\n\n# Set ownership of the application directory to the non-root user\nRUN chmod -R 777 .\nRUN chown -R favuser:favuser .\n\n# Switch to the non-root user\nUSER favuser\n\nEXPOSE 8080\n\nCMD [\"python\", \"watsonx-prompter.py\"]";
@@ -870,7 +921,7 @@ export class SingleWorkflowComponent implements OnInit {
   async generateDockerfile() {
     console.log('Generating Dockerfile...');
     
-    const dockerGenInput = "Create a Dockerfile for a Python web application that will be deployed to OpenShift. Include necessary base image, dependencies, and configurations.";
+    const dockerGenInput = "Generate a docker file for running a python application main.py on port 8080 which uses following environment variables: API_KEY. The application should run as a non-root user, namely favuser.";
 
     let body = {
       input: this.placeholderDockerGenInst + '\n\nInput:' + dockerGenInput + '\n\nOutput:',
@@ -894,33 +945,58 @@ export class SingleWorkflowComponent implements OnInit {
       console.error('Error generating Dockerfile:', error);
     }
   }
+  downloadFavMovies() {
+    const url = 'http://127.0.0.1:8080/download-fav-movies';
 
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (response: Blob) => {
+        const blob = new Blob([response], { type: 'application/zip' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'fav-movies-main.zip'; // Specify the filename
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Download failed:', error);
+      }
+    });
+  }
   // Save Dockerfile and trigger OCP config generation
   async saveDockerfile() {
     this.savedDockerfile = this.generateDockerfile_response.value || '';
     if (this.savedDockerfile) {
-      console.log('Dockerfile saved to state:', this.savedDockerfile);
-      try {
-        // Save Dockerfile to server
-        await this.http.post('http://127.0.0.1:8080/update_dockerfile', { content: this.savedDockerfile }).toPromise();
-        console.log('Dockerfile updated successfully');
-        await this.generateOCPConfig()
-      } catch (error: any) {
-        console.error('Error saving Dockerfile:', error);
-      }
+        console.log('Dockerfile saved to state:', this.savedDockerfile);
+        try {
+            // Save Dockerfile to server
+            await this.http.post('http://127.0.0.1:8080/update_dockerfile', { content: this.savedDockerfile }).toPromise();
+            console.log('Dockerfile updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(this.savedDockerfile, "dockerfile.docx");
+            }
+
+            await this.generateOCPConfig();
+        } catch (error) {
+            console.error('Error saving Dockerfile:', error);
+        }
     } else {
-      console.warn('No Dockerfile to save.');
+        console.warn('No Dockerfile to save.');
     }
   }
-
+  placeholderOCPConfigGenInst: any = " Create yaml files to deploy the watsonx-prompter application on OpenShift in demo namespace and expose the route with TLS termination at edge. The application container image is available at quay.io/eesilab/watsonx-prompter:latest with container port as 8080. It accepts following environment variables: PROJECT_ID, API_KEY and WATSONX_URL.\nOutput: apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: watsonx-prompter-deployment\n  namespace: demo\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: watsonx-prompter\n  template:\n    metadata:\n      labels:\n        app: watsonx-prompter\n    spec:\n      containers:\n      - name: watsonx-prompter-container\n        image: quay.io/eesilab/watsonx-prompter:latest\n        imagePullPolicy: Always\n        ports:\n        - containerPort: 8080\n        env:\n          - name: PROJECT_ID\n            value: \"ebc65ffd-b66f-4c10-b901-894ce0c61053\"\n          - name: API_KEY\n            value: \"efDjoR-XVp1Ji-O7lRMUapTpzTVRmYyElf_gL1aK4m6_\"\n          - name: WATSONX_URL\n            value: \"https://us-south.ml.cloud.ibm.com/ml/v1-beta/generation/text?version=2023-05-29\"\n        securityContext:\n          allowPrivilegeEscalation: false\n          runAsNonRoot: true\n          seccompProfile:\n            type: RuntimeDefault\n          capabilities:\n            drop:\n              - ALL\n\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: watsonx-prompter-svc\n  namespace: demo\nspec:\n  ports:\n  - port: 8080\n    protocol: TCP\n    targetPort: 8080\n  selector:\n    app: watsonx-prompter\n  type: ClusterIP\n\n---\napiVersion: route.openshift.io/v1\nkind: Route\nmetadata:\n  name: watsonx-prompter-route\n  namespace: demo\nspec:\n  port:\n    targetPort: 8080\n  tls:\n    insecureEdgeTerminationPolicy: Allow\n    termination: edge\n  to:\n    kind: Service\n    name: watsonx-prompter-svc\n    weight: 100\n  wildcardPolicy: None";
   // OCP Config Generation
   async generateOCPConfig() {
     console.log('Generating OCP config...');
     
-    const ocpConfigGenInput = "Generate OpenShift deployment configuration files including DeploymentConfig, Service, and Route for a Python web application. Include necessary configurations for deployment and routing.";
+    const ocpConfigGenInput = "Create yaml files to deploy the fav-movies application on Kubernetes in demo namespace and expose the ingress  . The application container image is available at index.docker.io/wiprodigiexpert/fav-movies:latest with container port as 8080. It accepts following environment variables: API_KEY with value <api_key_value>.Add securityContext to the container with no runAsNonRoot configuration.";
 
     let body = {
-      input: ocpConfigGenInput + '\n\nDockerfile:\n' + this.savedDockerfile + '\n\nOutput:',
+      input: this.placeholderOCPConfigGenInst + '\n\nInput:\n' + ocpConfigGenInput + '\n\nOutput:',
       model_id: "ibm/granite-34b-code-instruct",
       parameters: {
         "decoding_method": "greedy",
@@ -948,17 +1024,77 @@ export class SingleWorkflowComponent implements OnInit {
   async saveOCPConfig() {
     this.savedOCPConfig = this.generateOCPConfig_response.value || '';
     if (this.savedOCPConfig) {
-      console.log('OCP config saved to state:', this.savedOCPConfig);
-      try {
-        // Save OCP config to server
-        await this.http.post('http://127.0.0.1:8080/update_ocp_config', { content: this.savedOCPConfig }).toPromise();
-        console.log('OCP config updated successfully');
-      } catch (error: any) {
-        console.error('Error saving OCP config:', error);
-      }
+        console.log('OCP config saved to state:', this.savedOCPConfig);
+        try {
+            // Save OCP config to server
+            await this.http.post('http://127.0.0.1:8080/update_ocp_config', { content: this.savedOCPConfig }).toPromise();
+            console.log('OCP config updated successfully');
+
+            // Download if downloadAllOutputs is true
+            if (this.downloadAllOutputs) {
+                this.downloadAsWord(this.savedOCPConfig, "movies.docx");
+            }
+        } catch (error) {
+            console.error('Error saving OCP config:', error);
+        }
     } else {
-      console.warn('No OCP config to save.');
+        console.warn('No OCP config to save.');
     }
+  }
+
+  xmlText = "" 
+  isActive = false;
+  normal = "normal";
+  overlay = true;
+  createConfigJob(name: string) {
+    console.log(name, this.savedJenkinsConfig)
+      // Convert savedJenkinsConfig (string) to an XML document
+  
+
+  
+
+    this.loadingVisible = true
+    this.isActive = true;
+    this.overlay = true;
+    this.service.createJenkinsJob(this.savedJenkinsConfig, name).subscribe({
+      next: (value) => {
+      //   this.notificationObj = {
+      //     type: 'success',
+      //     title: 'Job creation success',
+      //     subtitle: 'Jenkins Job was created successfully',
+      //     caption: '',
+      //     showClose: true
+      // }
+      this.loadingVisible = false;
+      // this.notificationShow =true
+      this.isActive = false;
+      this.overlay = false;
+      // this.showNextStage = true
+      },
+      error: (err) => {
+      //   this.notificationObj = {
+      //     type: 'error',
+      //     title: 'Job creation failed',
+      //     subtitle: 'Something went wrong.',
+      //     caption: '',
+      //     showClose: true
+      // }
+        this.loadingVisible = false;
+        this.isActive = false;
+        this.overlay = false;
+        // this.notificationShow =true
+        console.error('Observable emitted an error: ' + err)
+      },
+      complete: () => {
+        console.log('Observable emitted the complete notification')
+        this.loadingVisible = false;
+        // this.notificationShow =true
+      }
+  })
+  }
+
+  getLatestXML(config:string){
+    this.savedJenkinsConfig = config
   }
 
 }

@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, make_response
 from db import db
 from watsonx import Watsonx
 from flask_cors import CORS
+from flask import send_file
 
 app = Flask(__name__)
 
@@ -256,6 +257,31 @@ def update_index_file():
     except Exception as e:
         return jsonify({'error': f'Failed to update index file: {str(e)}'}), 500
 
+
+
+
+
+@app.route('/download-fav-movies', methods=['GET'])
+def download_fav_movies():
+    try:
+        # Define the path to the 'fav-movies-main' folder
+        base_path = os.path.join(app.config['UPLOAD_FOLDER'], 'fav-movies', 'fav-movies-main')
+
+        # Ensure the folder exists
+        if not os.path.isdir(base_path):
+            return jsonify({'error': 'fav-movies-main folder not found'}), 404
+
+        # Define the path for the zip file
+        zip_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'fav-movies-main.zip')
+
+        # Create the zip file
+        shutil.make_archive(zip_file_path.replace('.zip', ''), 'zip', base_path)
+
+        # Serve the zip file for download
+        return send_file(zip_file_path, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({'error': f'Failed to zip and download folder: {str(e)}'}), 500
 
 
 @app.route('/fetch-main-file', methods=['GET'])

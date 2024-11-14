@@ -26,6 +26,7 @@ export class ModalComponent extends BaseModal{
 	}
 
   createJob() {
+    console.log("createjob modal",this.data)
     this.data.next(this.inputValue);
     this.closeModal()
   }

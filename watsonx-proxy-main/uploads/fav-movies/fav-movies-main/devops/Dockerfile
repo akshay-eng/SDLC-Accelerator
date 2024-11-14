@@ -1,36 +1,24 @@
-
 FROM python:3.11-slim
+LABEL maintainer="EESI Lab - Automation Squad"
+RUN groupadd -r favuser && useradd -r -g favuser favuser
+ENV API_KEY=""
 
-# Add necessary dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libc-dev \
-    libffi-dev \
-    libpq-dev \
-    libssl-dev \
-    make \
-    python3-dev \
-    wget \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100
-
-# Set working directory
+RUN mkdir app
 WORKDIR /app
 
 # Copy requirements.txt and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
 # Copy the application files
 COPY . .
 
-# Expose port and define command to run the application
+# Set ownership of the application directory to the non-root user
+RUN chmod -R 777 .
+RUN chown -R favuser:favuser .
+
+# Switch to the non-root user
+USER favuser
+
 EXPOSE 8080
-CMD ["python", "app.py"]
+
+CMD ["python", "main.py"]

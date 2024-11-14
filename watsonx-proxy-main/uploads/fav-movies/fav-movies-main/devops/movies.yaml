@@ -1,0 +1,65 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fav-movies-deployment
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fav-movies
+  template:
+    metadata:
+      labels:
+        app: fav-movies
+    spec:
+      containers:
+      - name: fav-movies-container
+        image: index.docker.io/wiprodigiexpert/fav-movies:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+          - name: API_KEY
+            value: "5c77d9391f1430fc996020d3ce21b4a8"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fav-movies-svc
+  namespace: demo
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: fav-movies
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fav-movies-ingress
+  namespace: demo
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: fav-movies.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fav-movies-svc
+            port:
+              number: 8080

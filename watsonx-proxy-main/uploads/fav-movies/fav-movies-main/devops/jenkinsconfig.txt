@@ -1,3 +1,4 @@
+
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job@1400.v7fd111b_ec82f">
   <actions/>
@@ -8,12 +9,12 @@
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>container_registry_url</name>
-          <defaultValue>quay.io</defaultValue>
+          <defaultValue>index.docker.io</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>registry_namespace</name>
-          <defaultValue>eesilab</defaultValue>
+          <defaultValue>wiprodigiexpert</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
